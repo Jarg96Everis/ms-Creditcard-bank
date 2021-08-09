@@ -1,6 +1,6 @@
 package com.bootcamp.msCreditcard.handler;
 
-import com.bootcamp.msCreditcard.entities.CreditCardCustomer;
+import com.bootcamp.msCreditcard.models.entities.CreditCardCustomer;
 import com.bootcamp.msCreditcard.services.ICreditCardCustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;

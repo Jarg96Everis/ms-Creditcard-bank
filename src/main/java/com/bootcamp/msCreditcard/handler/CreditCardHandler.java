@@ -1,6 +1,6 @@
 package com.bootcamp.msCreditcard.handler;
 
-import com.bootcamp.msCreditcard.entities.CreditCard;
+import com.bootcamp.msCreditcard.models.entities.CreditCard;
 import com.bootcamp.msCreditcard.services.ICreditCardService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -31,27 +31,33 @@ public class CreditCardHandler {
 
     public Mono<ServerResponse> findCreditCard(ServerRequest request) {
         String id = request.pathVariable("id");
-        return service.findById(id).flatMap((c -> ServerResponse
+        return service.findById(id).flatMap(c -> ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(c))
-                .switchIfEmpty(ServerResponse.notFound().build()))
-        );
+                .body(BodyInserters.fromValue(c)))
+                .switchIfEmpty(ServerResponse.notFound().build());
     }
 
     public Mono<ServerResponse> newCreditCard(ServerRequest request){
 
         Mono<CreditCard> creditCardMono = request.bodyToMono(CreditCard.class);
+        String customerIdentityNumber = request.pathVariable("customerIdentityNumber");
 
-        return creditCardMono.flatMap( c -> {
-            if(c.getCreateAt() == null){
-                c.setCreateAt(new Date());
-            }
-            return service.create(c);
-        }).flatMap( c -> ServerResponse
+        return creditCardMono.flatMap( creditCard -> service.getCustomer(customerIdentityNumber)
+                .flatMap(customerDTO -> {
+                    if(creditCard.getCreateAt() == null){
+                        creditCard.setCreateAt(new Date());
+                    }
+
+                    creditCard.setCustomer(customerDTO);
+                    String creditCardType = customerDTO.getCustomerIdentityNumber().length()==8? "Personal":"Empresarial";
+                    creditCard.setCreditCardType(creditCardType);
+                    return service.create(creditCard);
+                })).flatMap( c -> ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(c)));
+                .body(BodyInserters.fromValue(c)))
+                .switchIfEmpty(ServerResponse.notFound().build());
     }
 
     public Mono<ServerResponse> deleteCreditCard(ServerRequest request){
