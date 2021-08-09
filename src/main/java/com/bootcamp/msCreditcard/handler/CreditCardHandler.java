@@ -38,6 +38,15 @@ public class CreditCardHandler {
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
 
+    public Mono<ServerResponse> findCreditCardByPan(ServerRequest request) {
+        String pan = request.pathVariable("pan");
+        return service.findByPan(pan).flatMap(c -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(c)))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
     public Mono<ServerResponse> newCreditCard(ServerRequest request){
 
         Mono<CreditCard> creditCardMono = request.bodyToMono(CreditCard.class);
@@ -45,10 +54,6 @@ public class CreditCardHandler {
 
         return creditCardMono.flatMap( creditCard -> service.getCustomer(customerIdentityNumber)
                 .flatMap(customerDTO -> {
-                    if(creditCard.getCreateAt() == null){
-                        creditCard.setCreateAt(new Date());
-                    }
-
                     creditCard.setCustomer(customerDTO);
                     String creditCardType = customerDTO.getCustomerIdentityNumber().length()==8? "Personal":"Empresarial";
                     creditCard.setCreditCardType(creditCardType);
@@ -77,14 +82,8 @@ public class CreditCardHandler {
         String id = request.pathVariable("id");
 
         return service.findById(id).zipWith(creditCardMono, (db,req) -> {
-                    db.setPan(req.getPan());
-                    db.setCardBran(req.getCardBran());
-                    db.setCardType(req.getCardType());
-                    db.setCreditLimit(req.getCreditLimit());
                     db.setTotalConsumption(req.getTotalConsumption());
-                    db.setCustomer(req.getCustomer());
-                    db.setSettlementDay(req.getSettlementDay());
-                    db.setChargeDay(req.getChargeDay());
+                    db.setBalanceAmount(req.getBalanceAmount());
                     return db;
                 }).flatMap( c -> ServerResponse
                         .ok()

@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface ICreditCardService extends ICRUDService<CreditCard,String> {
 
     public Mono<CustomerDTO> getCustomer(String customerIdentityNumber);
+    public Mono<CreditCard> findByPan(String pan);
 }

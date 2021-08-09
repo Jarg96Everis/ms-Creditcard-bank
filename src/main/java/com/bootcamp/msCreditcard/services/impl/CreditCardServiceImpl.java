@@ -43,23 +43,8 @@ public class CreditCardServiceImpl implements ICreditCardService {
     }
 
     @Override
-    public Mono<CreditCard> update(String s, CreditCard o) {
-        return repository.findById(s).flatMap( c -> {
-            if (c == null){
-                return null;
-            }
-            c.setPan(o.getPan());
-            c.setCardBran(o.getCardBran());
-            c.setCardType(o.getCardType());
-            c.setCreditCardType(o.getCreditCardType());
-            c.setCreditLimit(o.getCreditLimit());
-            c.setTotalConsumption(o.getTotalConsumption());
-            c.setCustomer(o.getCustomer());
-            c.setSettlementDay(o.getSettlementDay());
-            c.setChargeDay(o.getChargeDay());
-
-            return Mono.just(c);
-        });
+    public Mono<CreditCard> update(CreditCard o) {
+        return repository.save(o);
     }
 
     @Override
@@ -77,5 +62,10 @@ public class CreditCardServiceImpl implements ICreditCardService {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchangeToMono(clientResponse -> clientResponse.bodyToMono(CustomerDTO.class))
                 .doOnNext(c -> LOGGER.info("Customer Response: Customer={}", c.getName()));
+    }
+
+    @Override
+    public Mono<CreditCard> findByPan(String pan) {
+        return repository.findByPan(pan);
     }
 }

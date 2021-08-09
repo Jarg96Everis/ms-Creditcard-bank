@@ -10,7 +10,7 @@ public interface ICRUDService<T,ID> {
 
     Mono<T> findById(ID id);
 
-    Mono<T> update(ID id, T o);
+    Mono<T> update(T o);
 
     Mono<Void> delete(T o);
 }
