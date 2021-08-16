@@ -61,7 +61,7 @@ public class CreditCardServiceImpl implements ICreditCardService {
         LOGGER.info("initializing client query");
         params.put("customerIdentityNumber",customerIdentityNumber);
         return client
-                .baseUrl("http://localhost:8081/customer")
+                .baseUrl("http://CUSTOMER-SERVICE/customer")
                 .build()
                 .get()
                 .uri("/findCustomerCredit/{customerIdentityNumber}",customerIdentityNumber)
@@ -79,7 +79,7 @@ public class CreditCardServiceImpl implements ICreditCardService {
     public Mono<CustomerDTO> newPan(String id, CustomerDTO customerDTO) {
             LOGGER.info("initializing Customer cards");
                 return client
-                        .baseUrl("http://localhost:8081/customer")
+                        .baseUrl("http://CUSTOMER-SERVICE/customer")
                         .build()
                         .put()
                         .uri("/cards/{id}", Collections.singletonMap("id", id))
