@@ -2,6 +2,7 @@ package com.bootcamp.msCreditcard.models.entities;
 
 import com.bootcamp.msCreditcard.models.dto.CustomerDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
@@ -17,6 +18,7 @@ import java.util.Date;
 @Document(collection = "creditcard")
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -38,9 +40,6 @@ public class CreditCard {
 
     @NotNull
     private String cardBran;
-
-    @NotNull
-    private String creditCardType;
 
     private double balanceAmount;
 

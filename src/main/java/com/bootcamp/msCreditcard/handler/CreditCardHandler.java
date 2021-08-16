@@ -1,5 +1,6 @@
 package com.bootcamp.msCreditcard.handler;
 
+import com.bootcamp.msCreditcard.models.dto.CustomerDTO;
 import com.bootcamp.msCreditcard.models.entities.CreditCard;
 import com.bootcamp.msCreditcard.services.ICreditCardService;
 import lombok.extern.slf4j.Slf4j;
@@ -53,10 +54,20 @@ public class CreditCardHandler {
         String customerIdentityNumber = request.pathVariable("customerIdentityNumber");
 
         return creditCardMono.flatMap( creditCard -> service.getCustomer(customerIdentityNumber)
+                .flatMap(customer ->
+                {
+                    if(customer.getCreditCard()==null){
+                        customer.setCreditCard(creditCard.getPan());
+                        LOGGER.info("Antes de actualizar pan" + customer.getName());
+                        return service.newPan(customer.getId(), customer);
+                    }
+                    return service.getCustomer(customerIdentityNumber);
+                })
+                .flatMap(customer -> service.getCustomer(customerIdentityNumber))
                 .flatMap(customerDTO -> {
+                    LOGGER.info("Veamos: " + customerDTO.getName());
+                    customerDTO.setCreditCard(creditCard.getPan());
                     creditCard.setCustomer(customerDTO);
-                    String creditCardType = customerDTO.getCustomerIdentityNumber().length()==8? "Personal":"Empresarial";
-                    creditCard.setCreditCardType(creditCardType);
                     return service.create(creditCard);
                 })).flatMap( c -> ServerResponse
                 .ok()

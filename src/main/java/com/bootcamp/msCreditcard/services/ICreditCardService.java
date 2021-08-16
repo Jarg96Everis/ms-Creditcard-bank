@@ -8,4 +8,5 @@ public interface ICreditCardService extends ICRUDService<CreditCard,String> {
 
     public Mono<CustomerDTO> getCustomer(String customerIdentityNumber);
     public Mono<CreditCard> findByPan(String pan);
+    public Mono<CustomerDTO> newPan(String id, CustomerDTO customerDTO);
 }

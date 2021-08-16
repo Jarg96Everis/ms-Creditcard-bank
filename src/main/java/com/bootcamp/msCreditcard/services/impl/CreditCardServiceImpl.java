@@ -7,12 +7,14 @@ import com.bootcamp.msCreditcard.services.ICreditCardService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +24,8 @@ public class CreditCardServiceImpl implements ICreditCardService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreditCardServiceImpl.class);
 
     @Autowired
-    private WebClient client;
+    @Qualifier("client")
+    private WebClient.Builder client;
 
     @Autowired
     private CreditCardRepository repository;
@@ -57,7 +60,10 @@ public class CreditCardServiceImpl implements ICreditCardService {
         Map<String, Object> params = new HashMap<String,Object>();
         LOGGER.info("initializing client query");
         params.put("customerIdentityNumber",customerIdentityNumber);
-        return client.get()
+        return client
+                .baseUrl("http://localhost:8081/customer")
+                .build()
+                .get()
                 .uri("/findCustomerCredit/{customerIdentityNumber}",customerIdentityNumber)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchangeToMono(clientResponse -> clientResponse.bodyToMono(CustomerDTO.class))
@@ -67,5 +73,21 @@ public class CreditCardServiceImpl implements ICreditCardService {
     @Override
     public Mono<CreditCard> findByPan(String pan) {
         return repository.findByPan(pan);
+    }
+
+    @Override
+    public Mono<CustomerDTO> newPan(String id, CustomerDTO customerDTO) {
+            LOGGER.info("initializing Customer cards");
+                return client
+                        .baseUrl("http://localhost:8081/customer")
+                        .build()
+                        .put()
+                        .uri("/cards/{id}", Collections.singletonMap("id", id))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(customerDTO)
+                        .retrieve()
+                        .bodyToMono(CustomerDTO.class)
+                        .doOnNext(c -> LOGGER.info("Customer Response: Customer={}", c.getName()));
     }
 }
