@@ -16,6 +16,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Date;
 
+/**
+ * The type Credit card handler.
+ */
 @Slf4j(topic = "creditcard_handler")
 @Component
 public class CreditCardHandler {
@@ -25,11 +28,23 @@ public class CreditCardHandler {
     @Autowired
     private ICreditCardService service;
 
+    /**
+     * Find all mono.
+     *
+     * @param request the request
+     * @return the mono
+     */
     public Mono<ServerResponse> findAll(ServerRequest request){
         return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(service.findAll(), CreditCard.class);
     }
 
+    /**
+     * Find credit card mono.
+     *
+     * @param request the request
+     * @return the mono
+     */
     public Mono<ServerResponse> findCreditCard(ServerRequest request) {
         String id = request.pathVariable("id");
         return service.findById(id).flatMap(c -> ServerResponse
@@ -39,6 +54,22 @@ public class CreditCardHandler {
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
 
+
+    public Mono<ServerResponse> findCreditCardByCustomer(ServerRequest request) {
+        String customerIdentityNumber = request.pathVariable("customerIdentityNumber");
+        return service.findByCustomerIdentityNumber(customerIdentityNumber).flatMap(c -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(c)))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    /**
+     * Find credit card by pan mono.
+     *
+     * @param request the request
+     * @return the mono
+     */
     public Mono<ServerResponse> findCreditCardByPan(ServerRequest request) {
         String pan = request.pathVariable("pan");
         return service.findByPan(pan).flatMap(c -> ServerResponse
@@ -48,34 +79,38 @@ public class CreditCardHandler {
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
 
+    /**
+     * New credit card mono.
+     *
+     * @param request the request
+     * @return the mono
+     */
     public Mono<ServerResponse> newCreditCard(ServerRequest request){
 
         Mono<CreditCard> creditCardMono = request.bodyToMono(CreditCard.class);
         String customerIdentityNumber = request.pathVariable("customerIdentityNumber");
 
         return creditCardMono.flatMap( creditCard -> service.getCustomer(customerIdentityNumber)
-                .flatMap(customer ->
-                {
-                    if(customer.getCreditCard()==null){
-                        customer.setCreditCard(creditCard.getPan());
-                        LOGGER.info("Antes de actualizar pan" + customer.getName());
-                        return service.newPan(customer.getId(), customer);
-                    }
-                    return service.getCustomer(customerIdentityNumber);
-                })
-                .flatMap(customer -> service.getCustomer(customerIdentityNumber))
-                .flatMap(customerDTO -> {
-                    LOGGER.info("Veamos: " + customerDTO.getName());
-                    customerDTO.setCreditCard(creditCard.getPan());
-                    creditCard.setCustomer(customerDTO);
+                .flatMap(customer -> {
+                    LOGGER.info("Veamos: " + customer.getName());
+                    creditCard.setCustomer(CustomerDTO.builder().name(customer.getName())
+                            .code(customer.getCustomerType().getCode())
+                            .customerIdentityNumber(customer.getCustomerIdentityNumber()).build());
                     return service.create(creditCard);
-                })).flatMap( c -> ServerResponse
+                })
+                ).flatMap( c -> ServerResponse
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(c)))
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
 
+    /**
+     * Delete credit card mono.
+     *
+     * @param request the request
+     * @return the mono
+     */
     public Mono<ServerResponse> deleteCreditCard(ServerRequest request){
 
         String id = request.pathVariable("id");
@@ -88,6 +123,12 @@ public class CreditCardHandler {
                 .switchIfEmpty(ServerResponse.notFound().build());
     }
 
+    /**
+     * Update credit card mono.
+     *
+     * @param request the request
+     * @return the mono
+     */
     public Mono<ServerResponse> updateCreditCard(ServerRequest request){
         Mono<CreditCard> creditCardMono = request.bodyToMono(CreditCard.class);
         String id = request.pathVariable("id");

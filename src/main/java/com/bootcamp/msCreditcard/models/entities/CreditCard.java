@@ -15,6 +15,9 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+/**
+ * The type Credit card.
+ */
 @Document(collection = "creditcard")
 @Getter
 @Setter
@@ -49,11 +52,15 @@ public class CreditCard {
     private double totalConsumption;
 
     @NotNull
-    private int settlementDay;
+    private String settlementDay;
+
+    private boolean debtor;
 
     @NotNull
-    private int chargeDay;
+    private String chargeDay;
+
 
     @NotNull
+    @Indexed(unique=true)
     private CustomerDTO customer;
 }

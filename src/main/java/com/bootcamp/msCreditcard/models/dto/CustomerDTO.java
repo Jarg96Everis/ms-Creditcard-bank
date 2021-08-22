@@ -4,6 +4,9 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * The type Customer dto.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
@@ -11,9 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 public class CustomerDTO {
 
-    private String id;
     private String name;
-    private String customerIdentityType;
+    private String code;
     private String customerIdentityNumber;
-    private String creditCard;
 }
